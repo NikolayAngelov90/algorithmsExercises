@@ -2,8 +2,8 @@ package coursera.socialnetworkconnectivity;
 
 public class UnionFind {
 
-    private int[] parent;
-    private int[] size;
+    private final int[] parent;
+    private final int[] size;
     private int count;
 
     public UnionFind(int n) {
