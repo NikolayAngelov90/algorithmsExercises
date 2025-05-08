@@ -1,4 +1,4 @@
-package HelloAlgorithms;
+package coursera.helloalgorithms;
 
 public class HelloGoodbye {
     public static void main(String[] args) {

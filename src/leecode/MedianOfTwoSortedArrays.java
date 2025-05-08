@@ -1,3 +1,5 @@
+package leecode;
+
 import java.util.*;
 
 public class MedianOfTwoSortedArrays {

@@ -1,4 +1,4 @@
-package addTwoNumbers;
+package leecode.addtwonumbers;
 
 import java.util.Scanner;
 
