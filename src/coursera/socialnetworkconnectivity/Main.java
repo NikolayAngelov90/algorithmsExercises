@@ -15,10 +15,10 @@ public class Main {
         List<LogEntry> logs = new ArrayList<>();
 
         for (int i = 0; i < m; i++) {
-            int type = scanner.nextInt();
+            int t = scanner.nextInt();
             int u1 = scanner.nextInt();
             int u2 = scanner.nextInt();
-            logs.add(new LogEntry(type, u1, u2));
+            logs.add(new LogEntry(t, u1, u2));
         }
 
         Collections.sort(logs);
