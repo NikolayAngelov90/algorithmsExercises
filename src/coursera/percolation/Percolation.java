@@ -6,7 +6,8 @@ public class Percolation {
 
     private final int n;
     private final boolean[][] grid;
-    private final WeightedQuickUnionUF uf;
+    private final WeightedQuickUnionUF ufPerc;
+    private final WeightedQuickUnionUF ufFull;
     private final int virtualTop;
     private final int virtualBottom;
     private int openSites;
@@ -15,7 +16,8 @@ public class Percolation {
         if (n <= 0) throw new IllegalArgumentException("n must be greater than 0");
         this.n = n;
         grid = new boolean[n][n];
-        uf = new WeightedQuickUnionUF(n * n + 2);
+        ufPerc = new WeightedQuickUnionUF(n * n + 2);
+        ufFull = new WeightedQuickUnionUF(n * n + 1);
         virtualTop = n * n;
         virtualBottom = n * n + 1;
         openSites = 0;
@@ -23,28 +25,67 @@ public class Percolation {
 
     public void open(int row, int col) {
         validate(row, col);
+
+        // Convert to 0-indexed
+        row--;
+        col--;
+
         if (grid[row][col]) return;
         grid[row][col] = true;
         openSites++;
 
         int current = index(row, col);
 
-        if (row == 0) uf.union(current, virtualTop);
-        if (row == n - 1) uf.union(current, virtualBottom);
+        // Connect to virtual top/bottom if in the first / last row
+        if (row == 0) {
+            ufPerc.union(current, virtualTop);
+            ufFull.union(current, virtualTop);
+        }
 
-        if (row > 0 && isOpen(row - 1, col)) uf.union(current, index(row - 1, col));
-        if (row < n - 1 && isOpen(row + 1, col)) uf.union(current, index(row + 1, col));
-        if (col > 0 && isOpen(row, col - 1)) uf.union(current, index(row, col - 1));
-        if (col < n - 1 && isOpen(row, col + 1)) uf.union(current, index(row, col + 1));
+        if (row == n - 1) {
+            ufPerc.union(current, virtualBottom);
+        }
+
+        // Connect to adjacent open sites
+        // Above
+        if (row > 0 && grid[row - 1][col]) {
+            ufPerc.union(current, index(row - 1, col));
+            ufFull.union(current, index(row - 1, col));
+        }
+
+        // Below
+        if (row < n - 1 && grid[row + 1][col]) {
+            ufPerc.union(current, index(row + 1, col));
+            ufFull.union(current, index(row + 1, col));
+        }
+
+        // Left
+        if (col > 0 && grid[row][col - 1]) {
+            ufPerc.union(current, index(row, col - 1));
+            ufFull.union(current, index(row, col - 1));
+        }
+        // Right
+        if (col < n - 1 && grid[row][col + 1]) {
+            ufPerc.union(current, index(row, col + 1));
+            ufFull.union(current, index(row, col + 1));
+        }
     }
 
     public boolean isOpen(int row, int col) {
         validate(row, col);
-        return grid[row][col];
+        return grid[row - 1][col - 1];
     }
 
     public boolean isFull(int row, int col) {
-        return isOpen(row, col) && uf.find(index(row, col)) == uf.find(virtualTop);
+        validate(row, col);
+        if (!isOpen(row, col)) return false;
+
+        // Convert to 0-indexed for internal calculations
+        row--;
+        col--;
+
+        // Use the ufFull object to check connectivity to top without backwash
+        return ufFull.find(index(row, col)) == ufFull.find(virtualTop);
     }
 
     public int numberOfOpenSites() {
@@ -52,12 +93,18 @@ public class Percolation {
     }
 
     public boolean percolates() {
-        return uf.find(virtualTop) == uf.find(virtualBottom);
+        // Special case for n=1
+        if (n == 1) {
+            return isOpen(1, 1);
+        }
+
+        // Use ufPerc to check if virtualTop and virtualBottom are connected
+        return ufPerc.find(virtualTop) == ufPerc.find(virtualBottom);
     }
 
     private void validate(int row, int col) {
-        if (row < 0 || row >= n || col < 0 || col >= n) {
-            throw new IllegalArgumentException("row and col must be in range [0, n)");
+        if (row < 1 || row > n || col < 1 || col > n) {
+            throw new IllegalArgumentException("row and col must be between 1 and n");
         }
     }
 
